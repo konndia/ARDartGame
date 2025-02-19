@@ -2,7 +2,8 @@ using System.Collections;
 using UnityEngine;
 using TMPro;
 using UnityEngine.XR;
-using Unity.XR.CoreUtils; 
+using Unity.XR.CoreUtils;
+using UnityEngine.SceneManagement;
 
 public class DartController : MonoBehaviour
 {
@@ -16,9 +17,14 @@ public class DartController : MonoBehaviour
     private bool isDartBoardSearched = false;
     private float m_distanceFromDartBoard = 0f;
     public TMP_Text text_distance;
-    public TMP_Text scoreText; 
+    public TMP_Text scoreText;
+    public TMP_Text attemptsValue;
+    public TMP_Text endScoreValue;
 
-    private int score = 0; 
+
+    private int score = 0;
+    private int attempts = 0; // Переменная для отслеживания количества попыток
+    private const int maxAttempts = 10;
 
     void Start()
     {
@@ -46,18 +52,27 @@ public class DartController : MonoBehaviour
             {
                 if (raycastHit.collider.CompareTag("dart"))
                 {
-                    
+
                     raycastHit.collider.enabled = false;
                     DartTemp.transform.parent = aRSession.transform;
 
                     Dart currentDartScript = DartTemp.GetComponent<Dart>();
                     currentDartScript.isForceOK = true;
 
-                    
                     IncreaseScore();
 
-                    
-                    DartsInit();
+                    attempts++;
+
+                    if (attempts > maxAttempts)
+                    {
+                        SceneManager.LoadScene("EndGame");
+                    }
+                    else
+                    {
+                        attemptsValue.text = "Attempts: " + (maxAttempts - attempts).ToString();
+                        DartsInit(); // Спавним новый дротик
+
+                    }
                 }
             }
         }
@@ -91,10 +106,10 @@ public class DartController : MonoBehaviour
         rb.isKinematic = true;
     }
 
-    
+
     public void IncreaseScore()
     {
-        score += 10; 
-        scoreText.text = "Score: " + score.ToString(); 
+        score += 10;
+        scoreText.text = "Score: " + score.ToString();
     }
 }
